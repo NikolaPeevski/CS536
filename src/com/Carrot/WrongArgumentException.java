@@ -9,5 +9,6 @@ public class WrongArgumentException extends Exception {
         //If idName is null, the message will be "Id name is null."
         //If sym is null, the message will be "Sym is null."
         //If both are null, the message will be "Id name and sym are null."
+        new Exception(message);
     }
 }
