@@ -1,25 +1,34 @@
 package com.Carrot;
 
+import jdk.internal.joptsimple.internal.Strings;
+
 public class Sym {
+
     private String type = "";
 
+    /**
+     * C
+     * @param type - String
+     */
     public Sym(String type) {
-        if (type != null) {
+        if (!Strings.isNullOrEmpty(type)) {
             this.type = type;
         }
-        //TODO: Implement this
-        // This is the constructor; it should initialize the Sym to have the given type.
     }
 
+    /**
+     *
+     * @return type
+     */
     public String getType() {
-        //TODO: Implement this
-        //Return this Sym's type.
         return this.type;
     }
 
+    /**
+     *
+     * @return
+     */
     public String toString() {
-        //TODO: Implement this
-        //Return this Sym's type. (This method will be changed later in a future project when more information is stored in a Sym.)
         return this.type;
     }
 }
