@@ -5,7 +5,7 @@ public class SymTable {
     private LinkedList<HashMap<String, Sym>> table = new LinkedList<HashMap<String, Sym>>();
 
     /**
-     *
+     * Initializes a Symtable with an empty scope
      */
     public SymTable() {
         table = new LinkedList<HashMap<String, Sym>>();
@@ -14,12 +14,12 @@ public class SymTable {
     }
 
     /**
-     * Adds a declaration to the first table
-     * @param idName valid key
-     * @param sym valid sym with sym type
-     * @throws DuplicateSymException thrown when a key already exists in the first hashmap
-     * @throws EmptySymTableException thrown when there is no hashmap present
-     * @throws WrongArgumentException when either idName or Sym is invalid
+     * Adds a declaration to the local scope
+     * @param idName valid key, non-null,non-empty, non-whitespace
+     * @param sym valid sym with sym type, non-null
+     * @throws DuplicateSymException thrown when a key already exists in the local scope
+     * @throws EmptySymTableException thrown when the SymTable has no scope
+     * @throws WrongArgumentException when either idName or Sym is invalid, Constants present the argument messages.
      */
     public void addDecl(String idName, Sym sym)
             throws
@@ -47,17 +47,18 @@ public class SymTable {
     }
 
     /**
-     * Adds an empty hashmap to the first entry
+     * Adds an empty scope to the first entry of the table
      */
     public void addScope() {
         table.addFirst(new HashMap<String, Sym>());
     }
 
     /**
-     * Searches the first entry of the list
+     * Searches the local scope for a corresponding key
+     * Works in a first comes, first serves manner
      * @param idName valid idName
      * @return null or a Sym corresponding to the idName
-     * @throws EmptySymTableException
+     * @throws EmptySymTableException thrown when the SymTable has no scope
      */
     public Sym lookupLocal(String idName)
             throws
@@ -76,10 +77,11 @@ public class SymTable {
     }
 
     /**
-     * Searches the whole collection for a corresponding key
+     * Searches the scope for a corresponding key
+     * Works in a first comes, first serves manner
      * @param idName valid IdName
      * @return null or corresponding Sym to the idName
-     * @throws EmptySymTableException
+     * @throws EmptySymTableException thrown when the SymTable has no scope
      */
     public Sym lookupGlobal(String idName)
             throws
@@ -116,7 +118,8 @@ public class SymTable {
     }
 
     /**
-     *
+     * Used for debugging
+     * Prints the whole collection
      */
     public void print() {
         System.out.println("\n=== Sym Table ===\n");
@@ -130,7 +133,7 @@ public class SymTable {
      * Validates idName and Sym and throws appropriate exception if invalid
      * @param idName valid idName
      * @param sym valid Sym
-     * @throws WrongArgumentException Look up constants for corresponding exceptions
+     * @throws WrongArgumentException Look up constants for corresponding exception messages
      */
     private void ArgumentValidator(String idName, Sym sym) throws WrongArgumentException {
         boolean invalidName = Utils.isNullOrEmpty(idName);

@@ -3,7 +3,7 @@ public class Sym {
     private String type = "";
 
     /**
-     *
+     * Initializes Sym with a non-null, non-empty type
      * @param type - String
      */
     public Sym(String type) {
@@ -19,7 +19,7 @@ public class Sym {
     }
 
     /**
-     *
+     *  Returns the type of Sym
      * @return type
      */
     public String getType() {
@@ -27,7 +27,7 @@ public class Sym {
     }
 
     /**
-     *
+     * Currently returns the type of Sym
      * @return
      */
     public String toString() {
