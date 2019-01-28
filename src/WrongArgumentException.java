@@ -1,5 +1,3 @@
-package com.Carrot;
-
 public class WrongArgumentException extends Exception {
 
     public WrongArgumentException(String message) {

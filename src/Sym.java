@@ -1,17 +1,19 @@
-package com.Carrot;
-
-import jdk.internal.joptsimple.internal.Strings;
-
 public class Sym {
 
     private String type = "";
 
     /**
-     * C
+     *
      * @param type - String
      */
     public Sym(String type) {
-        if (!Strings.isNullOrEmpty(type)) {
+        if (!Utils.isNullOrEmpty(type)) {
+            type = type.trim();
+
+            if (type.isEmpty()) {
+                // Do something.. I guess..
+            }
+
             this.type = type;
         }
     }

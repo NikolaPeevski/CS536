@@ -1,7 +1,5 @@
-package com.Carrot;
-import jdk.internal.joptsimple.internal.Strings;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class SymTable {
     private LinkedList<HashMap<String, Sym>> table = new LinkedList<HashMap<String, Sym>>();
@@ -16,12 +14,12 @@ public class SymTable {
     }
 
     /**
-     *
-     * @param idName
-     * @param sym
-     * @throws DuplicateSymException
-     * @throws EmptySymTableException
-     * @throws WrongArgumentException
+     * Adds a declaration to the first table
+     * @param idName valid key
+     * @param sym valid sym with sym type
+     * @throws DuplicateSymException thrown when a key already exists in the first hashmap
+     * @throws EmptySymTableException thrown when there is no hashmap present
+     * @throws WrongArgumentException when either idName or Sym is invalid
      */
     public void addDecl(String idName, Sym sym)
             throws
@@ -35,6 +33,12 @@ public class SymTable {
 
         ArgumentValidator(idName, sym);
 
+        idName = idName.trim();
+
+        if (idName.isEmpty()) {
+            //Do something...
+        }
+
         if(table.getFirst().containsKey(idName)) {
             throw new DuplicateSymException();
         }
@@ -43,23 +47,23 @@ public class SymTable {
     }
 
     /**
-     *
+     * Adds an empty hashmap to the first entry
      */
     public void addScope() {
         table.addFirst(new HashMap<String, Sym>());
     }
 
     /**
-     *
-     * @param idName
-     * @return
+     * Searches the first entry of the list
+     * @param idName valid idName
+     * @return null or a Sym corresponding to the idName
      * @throws EmptySymTableException
      */
     public Sym lookupLocal(String idName)
             throws
             EmptySymTableException {
 
-        if (Strings.isNullOrEmpty(idName)) {
+        if (Utils.isNullOrEmpty(idName)) {
             return null;
         }
 
@@ -72,16 +76,16 @@ public class SymTable {
     }
 
     /**
-     *
-     * @param idName
-     * @return
+     * Searches the whole collection for a corresponding key
+     * @param idName valid IdName
+     * @return null or corresponding Sym to the idName
      * @throws EmptySymTableException
      */
     public Sym lookupGlobal(String idName)
             throws
             EmptySymTableException {
 
-        if (Strings.isNullOrEmpty(idName)) {
+        if (Utils.isNullOrEmpty(idName)) {
             return null;
         }
 
@@ -98,8 +102,8 @@ public class SymTable {
     }
 
     /**
-     *
-     * @throws EmptySymTableException
+     * Removes the first entry of the collection
+     * @throws EmptySymTableException thrown when the collection is empty
      */
     public void removeScope()
             throws
@@ -117,20 +121,24 @@ public class SymTable {
         //TODO: Implement this
         //This method is for debugging.
         //First, print “\n=== Sym Table ===\n”.
-
+        System.out.println("\n=== Sym Table ===\n");
+        for(HashMap<String, Sym> m : table) {
+            System.out.println(String.format("%s \n", m.toString()));
+        }
+        System.out.println("\n");
         //Then, for each HashMap M in the list, print M.toString() followed by a newline.
         //Finally, print one more newline. All output should go to System.out.
     }
 
     /**
-     *
-     * @param idName
-     * @param sym
-     * @throws WrongArgumentException
+     * Validates idName and Sym and throws appropriate exception if invalid
+     * @param idName valid idName
+     * @param sym valid Sym
+     * @throws WrongArgumentException Look up constants for corresponding exceptions
      */
     private void ArgumentValidator(String idName, Sym sym) throws WrongArgumentException {
-        boolean validName = !Strings.isNullOrEmpty(idName.trim());
-        boolean validSym = (sym == null);
+        boolean validName = !Utils.isNullOrEmpty(idName);
+        boolean validSym = (sym != null);
 
         if (!validName && !validSym) {
             throw new WrongArgumentException(Constants.WRONG_ARGUMENT_EXCEPTION_LIST[2]);
