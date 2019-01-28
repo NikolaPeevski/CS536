@@ -67,10 +67,10 @@ public class SymTable {
             return null;
         }
 
-        HashMap<String, Sym> firstTable = table.getFirst();
-        if (firstTable.isEmpty()) {
+        if (table.isEmpty()) {
             throw new EmptySymTableException();
         }
+        HashMap<String, Sym> firstTable = table.getFirst();
 
         return firstTable.get(idName);
     }
@@ -108,6 +108,7 @@ public class SymTable {
     public void removeScope()
             throws
             EmptySymTableException {
+
         if (table.isEmpty()) {
             throw new EmptySymTableException();
         }
@@ -118,16 +119,11 @@ public class SymTable {
      *
      */
     public void print() {
-        //TODO: Implement this
-        //This method is for debugging.
-        //First, print “\n=== Sym Table ===\n”.
         System.out.println("\n=== Sym Table ===\n");
         for(HashMap<String, Sym> m : table) {
             System.out.println(String.format("%s \n", m.toString()));
         }
         System.out.println("\n");
-        //Then, for each HashMap M in the list, print M.toString() followed by a newline.
-        //Finally, print one more newline. All output should go to System.out.
     }
 
     /**
@@ -137,14 +133,14 @@ public class SymTable {
      * @throws WrongArgumentException Look up constants for corresponding exceptions
      */
     private void ArgumentValidator(String idName, Sym sym) throws WrongArgumentException {
-        boolean validName = !Utils.isNullOrEmpty(idName);
-        boolean validSym = (sym != null);
+        boolean invalidName = Utils.isNullOrEmpty(idName);
+        boolean invalidSym = (sym == null);
 
-        if (!validName && !validSym) {
+        if (invalidName && invalidSym) {
             throw new WrongArgumentException(Constants.WRONG_ARGUMENT_EXCEPTION_LIST[2]);
-        } else if (!validSym) {
+        } else if (invalidSym) {
             throw new WrongArgumentException(Constants.WRONG_ARGUMENT_EXCEPTION_LIST[1]);
-        } else if (!validName) {
+        } else if (invalidName) {
             throw new WrongArgumentException(Constants.WRONG_ARGUMENT_EXCEPTION_LIST[0]);
         }
     }
