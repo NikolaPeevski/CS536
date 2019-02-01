@@ -1,3 +1,5 @@
+package Assignment1;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -135,7 +137,9 @@ public class SymTable {
      * @param sym valid Sym
      * @throws WrongArgumentException Look up constants for corresponding exception messages
      */
-    private void ArgumentValidator(String idName, Sym sym) throws WrongArgumentException {
+    private void ArgumentValidator(String idName, Sym sym)
+            throws
+            WrongArgumentException {
         boolean invalidName = Utils.isNullOrEmpty(idName);
         boolean invalidSym = (sym == null);
 

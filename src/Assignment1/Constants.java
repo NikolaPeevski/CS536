@@ -1,3 +1,5 @@
+package Assignment1;
+
 public class Constants {
     /**
      * 0 - Id name is null
