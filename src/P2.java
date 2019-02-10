@@ -2,6 +2,8 @@ import java.util.*;
 import java.io.*;
 import java_cup.runtime.*;  // defines Symbol
 
+
+
 /**
  * This program is to be used to test the Carrot scanner.
  * This version is set up to test all tokens, but more code is needed to test 
@@ -9,12 +11,13 @@ import java_cup.runtime.*;  // defines Symbol
  * numbers, values associated with tokens).
  */
 public class P2 {
+
     public static void main(String[] args) throws IOException {
                                            // exception may be thrown by yylex
         // test all tokens
         testAllTokens();
         CharNum.num = 1;
-    
+
         // ADD CALLS TO OTHER TEST METHODS HERE
     }
 
