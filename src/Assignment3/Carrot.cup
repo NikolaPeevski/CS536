@@ -9,7 +9,6 @@ import java.util.*;
  * than just "Syntax error"
  */
 parser code {:
-
 public void syntax_error(Symbol currToken) {
     if (currToken.value == null) {
         ErrMsg.fatal(0,0, "Syntax error at end of file");
@@ -28,15 +27,15 @@ public void syntax_error(Symbol currToken) {
 terminal                INT;
 terminal                BOOL;
 terminal                VOID;
-terminal                TRUE;
-terminal                FALSE;
+terminal TokenVal       TRUE;
+terminal TokenVal       FALSE;
 terminal                STRUCT;
 terminal                CIN;
 terminal                COUT;
 terminal                IF;
 terminal                ELSE;
 terminal                WHILE;
-terminal		REPEAT;
+terminal		        REPEAT;
 terminal                RETURN;
 terminal IdTokenVal     ID;
 terminal IntLitTokenVal INTLITERAL;
@@ -73,15 +72,60 @@ terminal                ASSIGN;
  * NOTE: You will need to add more nonterminals to this list as you
  *       add productions to the grammar below.
  */
+
+ //TODO: Check if all nodes correspond to the AST file and change em
+
 non terminal ProgramNode      program;
+
 non terminal LinkedList       declList;
 non terminal DeclNode         decl;
+
 non terminal VarDeclNode      varDecl;
+
+non terminal FnDeclNode       fnDecl;
+non terminal FnBodyNode       fnBody;
+
+non terminal StructDeclNode   structDecl;
+non terminal StructBodyNode   structBody;
+
+non terminal FormalsListNode  formalsList;
+non terminal FormalDeclNode   formalDecl;
+
+non terminal VarDeclListNode  varDeclList;
+non terminal LinkedList       stmtList;
+
+non terminal StmtNode         stmt;
+
+non terminal AssignNode    assignExp;
+non terminal ExpNode          loc;
+non terminal ExpNode          exp;
+non terminal FncallNode       fncall;
+
+non terminal ActualListNode   actualList;
+
 non terminal TypeNode         type;
 non terminal IdNode           id;
- 
+
+non terminal ExpNode         term;
  
 /* NOTE: Add precedence and associativity declarations here */
+//precedence right
+
+//BOOLEAN PRECEDENCE
+
+//BINARY
+//maybe left instead of nonassoc?
+precedence nonassoc MINUS, NOT;
+precedence left TIMES, DIVIDE;
+precedence left PLUS, MINUS;
+precedence nonassoc EQUALS, NOTEQUALS, LESS, GREATER, LESSEQ,GREATEREQ;
+precedence nonassoc AND;
+precedence nonassoc OR;
+precedence right ASSIGN;
+
+//RELATIONAL PRECEDENCE
+//EQUALITY
+
 
 
 start with program;
@@ -94,6 +138,10 @@ start with program;
 program         ::= declList: d
                 {: RESULT = new ProgramNode(new DeclListNode(d));
                 :}
+                | error
+                {:
+                    parser.report_error("class_declarations","WRONG");
+                :}
                 ;
 
 declList        ::= declList:dl decl:d
@@ -104,9 +152,37 @@ declList        ::= declList:dl decl:d
                 {: RESULT = new LinkedList<DeclNode>();
                 :}
                 ;
+stmtList        ::= stmtList:stL stmt:st
+                {: stL.addLast(st);
+                   RESULT = stL;
+                :}
+                |
+                {:
+                    RESULT = new LinkedList<StmtListNode>();
+                :};
 
 decl            ::= varDecl:v
                 {: RESULT = v;
+                :}
+                | fnDecl:fn /* function decl*/
+                {: RESULT = fn;
+                :}
+                ;
+fnDecl          ::= type:t id:id formalsList:fm fnBody:fnB
+                {: RESULT = new FnDeclNode(t, id, fm, fnB);
+                :}
+                ;
+
+formalsList     ::= LPAREN RPAREN
+                {: RESULT = new FormalsListNode(new LinkedList<FormalDeclNode>());
+                :}
+                | LPAREN formalsList:fm RPAREN
+                {: RESULT = fm;
+                :}
+                ;
+
+fnBody          ::= LCURLY declList:vD stmtList:stmtL RCURLY
+                {: RESULT = new FnBodyNode(new DeclListNode(vD), new StmtListNode(stmtL));
                 :}
                 ;
 
@@ -114,9 +190,124 @@ varDecl         ::= type:t id:i SEMICOLON
                 {: RESULT = new VarDeclNode(t, i, VarDeclNode.NOT_STRUCT);
                 :}
                 ;
+stmt            ::= assignExp:ae SEMICOLON
+                {: RESULT = new AssignStmtNode(ae);
+                :}
+                | loc:l PLUSPLUS SEMICOLON
+                {: RESULT = new PostIncStmtNode(l);
+                :}
+                | loc:l MINUSMINUS SEMICOLON
+                {: RESULT = new PostDecStmtNode(l);
+                :}
+                | CIN READ loc:l SEMICOLON
+                {: RESULT = new ReadStmtNode(l);
+                :}
+                | COUT WRITE exp:exp SEMICOLON
+                {: RESULT = new WriteStmtNode(exp);
+                :}
+                | IF LPAREN exp:exp1 RPAREN LCURLY declList:vD stmtList:stmtL RCURLY
+                {: RESULT = new IfStmtNode(exp1, new DeclListNode(vD), new StmtListNode(stmtL));
+                :}
+                | IF LPAREN exp:exp1 RPAREN LCURLY declList:vD1 stmtList:stmtL1 RCURLY ELSE LCURLY declList:vD2 stmtList:stmtL2 RCURLY
+                {: RESULT = new IfElseStmtNode(exp1,
+                        new DeclListNode(vD1), new StmtListNode(stmtL1),
+                        new DeclListNode(vD2), new StmtListNode(stmtL2));
+                :}
+                | WHILE LPAREN exp:exp1 RPAREN LCURLY declList:vD stmtList:stmtL RCURLY
+                {: RESULT = new WhileStmtNode(exp1, new DeclListNode(vD), new StmtListNode(stmtL));
+                :}
+                | REPEAT LPAREN exp:exp1 RPAREN LCURLY declList:vD stmtList:stmtL RCURLY
+                {: RESULT = new RepeatStmtNode(exp1, new DeclListNode(vD), new StmtListNode(stmtL));
+                :}
+                ;
+
+assignExp       ::= loc:l ASSIGN exp:ex
+                {: RESULT = new AssignNode(l, ex);
+                :}
+                ;
+
+loc             ::= id:i
+                {: RESULT = i;
+                :}
+                | loc:l DOT id:i
+                {: RESULT = new DotAccessExpNode(l, i);
+                :}
+                ;
+exp             ::= loc:l
+                {: RESULT = l;
+                :}
+                |term:t
+                {: RESULT = t;
+                :}
+                | exp: exp1 PLUS exp: exp2
+                {: RESULT = new PlusNode(exp1, exp2);
+                :}
+                | exp: exp1 MINUS exp: exp2
+                {: RESULT = new MinusNode(exp1, exp2);
+                :}
+                | exp: exp1 TIMES exp: exp2
+                {: RESULT = new TimesNode(exp1, exp2);
+                :}
+                | exp: exp1 DIVIDE exp: exp2
+                {: RESULT = new DivideNode(exp1, exp2);
+                :}
+                | NOT exp:e
+                {: RESULT = new NotNode(e);
+                :}
+                | exp:exp1 AND exp:exp2
+                {: RESULT = new AndNode(exp1,exp2);
+                :}
+                | exp:exp1 OR exp:exp2
+                {: RESULT = new OrNode(exp1,exp2);
+                :}
+                | exp:exp1 NOTEQUALS exp:exp2
+                {: RESULT = new NotEqualsNode(exp1,exp2);
+                :}
+                | exp:exp1 EQUALS exp:exp2
+                {: RESULT = new EqualsNode(exp1,exp2);
+                :}
+                | exp:exp1 LESS exp:exp2
+                {: RESULT = new LessNode(exp1,exp2);
+                :}
+                | exp:exp1 GREATER exp:exp2
+                {: RESULT = new GreaterNode(exp1,exp2);
+                :}
+                | exp:exp1 LESSEQ exp:exp2
+                {: RESULT = new LessEqNode(exp1,exp2);
+                :}
+                | exp:exp1 GREATEREQ exp:exp2
+                {: RESULT = new GreaterEqNode(exp1,exp2);
+                :}
+                | MINUS exp:e
+                {: RESULT = new UnaryMinusNode(e);
+                :}
+                ;
+
+term            ::= INTLITERAL:i
+                {: RESULT = new IntLitNode(i.linenum, i.charnum, i.intVal);
+                :}
+                | STRINGLITERAL:s
+                {: RESULT = new StringLitNode(s.linenum, s.charnum, s.strVal);
+                :}
+                | TRUE:t //TODO:ADD SYNTAX ERROR
+                {: RESULT = new TrueNode(t.linenum, t.charnum);
+                :}
+                | FALSE:t //TODO:ADD SYNTAX ERROR
+                {: RESULT = new FalseNode(t.linenum, t.charnum);
+                :}
+                | LPAREN exp:e RPAREN
+                {: RESULT = e;
+                :}
+                ;
 
 type            ::= INT
                 {: RESULT = new IntNode();
+                :}
+                | BOOL
+                {: RESULT = new BoolNode();
+                :}
+                | VOID
+                {: RESULT = new VoidNode();
                 :}
                 ;
 
