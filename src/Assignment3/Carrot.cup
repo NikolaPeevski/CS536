@@ -73,8 +73,6 @@ terminal                ASSIGN;
  *       add productions to the grammar below.
  */
 
- //TODO: Check if all nodes correspond to the AST file and change em
-
 non terminal ProgramNode      program;
 
 non terminal LinkedList       declList;
@@ -86,12 +84,13 @@ non terminal FnDeclNode       fnDecl;
 non terminal FnBodyNode       fnBody;
 
 non terminal StructDeclNode   structDecl;
-non terminal StructBodyNode   structBody;
+non terminal LinkedList       structBody;
 
-non terminal FormalsListNode  formalsList;
+non terminal LinkedList       formalsList;
 non terminal FormalDeclNode   formalDecl;
+non terminal FormalsListNode  formals;
 
-non terminal VarDeclListNode  varDeclList;
+non terminal LinkedList       varDeclList;
 non terminal LinkedList       stmtList;
 
 non terminal StmtNode         stmt;
@@ -99,9 +98,9 @@ non terminal StmtNode         stmt;
 non terminal AssignNode    assignExp;
 non terminal ExpNode          loc;
 non terminal ExpNode          exp;
-non terminal FncallNode       fncall;
+non terminal CallExpNode       fncall;
 
-non terminal ActualListNode   actualList;
+non terminal LinkedList   actualList;
 
 non terminal TypeNode         type;
 non terminal IdNode           id;
@@ -115,13 +114,13 @@ non terminal ExpNode         term;
 
 //BINARY
 //maybe left instead of nonassoc?
-precedence nonassoc MINUS, NOT;
-precedence left TIMES, DIVIDE;
-precedence left PLUS, MINUS;
-precedence nonassoc EQUALS, NOTEQUALS, LESS, GREATER, LESSEQ,GREATEREQ;
-precedence nonassoc AND;
-precedence nonassoc OR;
 precedence right ASSIGN;
+precedence nonassoc OR;
+precedence nonassoc AND;
+precedence nonassoc EQUALS, NOTEQUALS, LESS, GREATER, LESSEQ,GREATEREQ;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+precedence nonassoc NOT;
 
 //RELATIONAL PRECEDENCE
 //EQUALITY
@@ -152,6 +151,14 @@ declList        ::= declList:dl decl:d
                 {: RESULT = new LinkedList<DeclNode>();
                 :}
                 ;
+varDeclList        ::= varDeclList:dl varDecl:d
+                {: dl.addLast(d);
+                   RESULT = dl;
+                :}
+                | /* epsilon */
+                {: RESULT = new LinkedList<VarDeclNode>();
+                :}
+                ;
 stmtList        ::= stmtList:stL stmt:st
                 {: stL.addLast(st);
                    RESULT = stL;
@@ -167,21 +174,67 @@ decl            ::= varDecl:v
                 | fnDecl:fn /* function decl*/
                 {: RESULT = fn;
                 :}
+                | structDecl:sd
+                {: RESULT = sd;
+                :}
                 ;
-fnDecl          ::= type:t id:id formalsList:fm fnBody:fnB
+structDecl      ::= STRUCT id:i1 LCURLY structBody:sb RCURLY SEMICOLON
+                {: RESULT = new StructDeclNode(i1, new DeclListNode(sb));
+                :}
+                ;
+
+structBody      ::= structBody:sb varDecl:vD
+                {:  sb.addLast(vD);
+                    RESULT = sb;
+                :}
+                | varDecl:vb
+                {: RESULT = new LinkedList<DeclNode>(Arrays.asList(vb));
+                :}
+                ;
+
+fnDecl          ::= type:t id:id formals:fm fnBody:fnB
                 {: RESULT = new FnDeclNode(t, id, fm, fnB);
                 :}
                 ;
-
-formalsList     ::= LPAREN RPAREN
-                {: RESULT = new FormalsListNode(new LinkedList<FormalDeclNode>());
+fncall          ::= id:i LPAREN RPAREN
+                {: RESULT = new CallExpNode(i, new ExpListNode(null));
                 :}
-                | LPAREN formalsList:fm RPAREN
-                {: RESULT = fm;
+                | id:i LPAREN actualList:aL RPAREN
+                {: RESULT = new CallExpNode(i, new ExpListNode(aL));
+                :}
+                ;
+actualList      ::= exp:exp
+                {: RESULT = new LinkedList<ExpNode>(Arrays.asList(exp));
+                :}
+                | actualList:al COMMA exp:e
+                {:  al.addLast(e);
+                    RESULT = al;
                 :}
                 ;
 
-fnBody          ::= LCURLY declList:vD stmtList:stmtL RCURLY
+formals         ::= LPAREN RPAREN
+                {: RESULT = new FormalsListNode(new LinkedList<FormalDeclNode>());
+                :}
+                | LPAREN formalsList:fm RPAREN
+                {: RESULT = new FormalsListNode(fm);
+                :}
+                ;
+formalsList     ::= formalDecl:fmD
+                {: RESULT = new LinkedList<FormalDeclNode>(Arrays.asList(fmD));
+                :}
+                | formalDecl:fmD COMMA formalsList:fL
+                {:  fL.push(fmD);
+                    RESULT = fL;
+                :}
+                ;
+
+formalDecl      ::= type:t id:d
+                {: RESULT = new FormalDeclNode(t, d);
+                :}
+                ;
+
+
+fnBody          ::= LCURLY varDeclList:vD stmtList:stmtL RCURLY
                 {: RESULT = new FnBodyNode(new DeclListNode(vD), new StmtListNode(stmtL));
                 :}
                 ;
@@ -189,7 +242,11 @@ fnBody          ::= LCURLY declList:vD stmtList:stmtL RCURLY
 varDecl         ::= type:t id:i SEMICOLON
                 {: RESULT = new VarDeclNode(t, i, VarDeclNode.NOT_STRUCT);
                 :}
+                | STRUCT id:id1 id:id2 SEMICOLON
+                {: RESULT = new VarDeclNode(new StructNode(id1),id2, 0);
+                :}
                 ;
+
 stmt            ::= assignExp:ae SEMICOLON
                 {: RESULT = new AssignStmtNode(ae);
                 :}
@@ -205,19 +262,28 @@ stmt            ::= assignExp:ae SEMICOLON
                 | COUT WRITE exp:exp SEMICOLON
                 {: RESULT = new WriteStmtNode(exp);
                 :}
-                | IF LPAREN exp:exp1 RPAREN LCURLY declList:vD stmtList:stmtL RCURLY
+                | IF LPAREN exp:exp1 RPAREN LCURLY varDeclList:vD stmtList:stmtL RCURLY
                 {: RESULT = new IfStmtNode(exp1, new DeclListNode(vD), new StmtListNode(stmtL));
                 :}
-                | IF LPAREN exp:exp1 RPAREN LCURLY declList:vD1 stmtList:stmtL1 RCURLY ELSE LCURLY declList:vD2 stmtList:stmtL2 RCURLY
+                | IF LPAREN exp:exp1 RPAREN LCURLY varDeclList:vD1 stmtList:stmtL1 RCURLY ELSE LCURLY declList:vD2 stmtList:stmtL2 RCURLY
                 {: RESULT = new IfElseStmtNode(exp1,
                         new DeclListNode(vD1), new StmtListNode(stmtL1),
                         new DeclListNode(vD2), new StmtListNode(stmtL2));
                 :}
-                | WHILE LPAREN exp:exp1 RPAREN LCURLY declList:vD stmtList:stmtL RCURLY
+                | WHILE LPAREN exp:exp1 RPAREN LCURLY varDeclList:vD stmtList:stmtL RCURLY
                 {: RESULT = new WhileStmtNode(exp1, new DeclListNode(vD), new StmtListNode(stmtL));
                 :}
-                | REPEAT LPAREN exp:exp1 RPAREN LCURLY declList:vD stmtList:stmtL RCURLY
+                | REPEAT LPAREN exp:exp1 RPAREN LCURLY varDeclList:vD stmtList:stmtL RCURLY
                 {: RESULT = new RepeatStmtNode(exp1, new DeclListNode(vD), new StmtListNode(stmtL));
+                :}
+                | RETURN exp:exp SEMICOLON
+                {: RESULT = new ReturnStmtNode(exp);
+                :}
+                | RETURN SEMICOLON
+                {: RESULT = new ReturnStmtNode(null);
+                :}
+                | fncall:call SEMICOLON
+                {: RESULT = new CallStmtNode(call);
                 :}
                 ;
 
@@ -233,10 +299,7 @@ loc             ::= id:i
                 {: RESULT = new DotAccessExpNode(l, i);
                 :}
                 ;
-exp             ::= loc:l
-                {: RESULT = l;
-                :}
-                |term:t
+exp             ::= term:t
                 {: RESULT = t;
                 :}
                 | exp: exp1 PLUS exp: exp2
@@ -289,14 +352,20 @@ term            ::= INTLITERAL:i
                 | STRINGLITERAL:s
                 {: RESULT = new StringLitNode(s.linenum, s.charnum, s.strVal);
                 :}
-                | TRUE:t //TODO:ADD SYNTAX ERROR
+                | TRUE:t
                 {: RESULT = new TrueNode(t.linenum, t.charnum);
                 :}
-                | FALSE:t //TODO:ADD SYNTAX ERROR
+                | FALSE:t
                 {: RESULT = new FalseNode(t.linenum, t.charnum);
                 :}
                 | LPAREN exp:e RPAREN
                 {: RESULT = e;
+                :}
+                | fncall:call
+                {: RESULT = call;
+                :}
+                | loc:l
+                {: RESULT = l;
                 :}
                 ;
 

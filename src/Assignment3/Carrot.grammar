@@ -1,45 +1,45 @@
 /**********************************************************************
  Grammar for Carrot programs
  **********************************************************************/
-program         ::= declList
+program         ::= declList /* DONE*/
                 ;
 
-declList        ::= declList decl
-                | /* epsilon */
+declList        ::= declList decl /* DONE*/
+                | /* epsilon */ /* DONE*/
                 ;
 
-decl            ::= varDecl
-                | fnDecl
-                | structDecl     // struct definitions only at top level
+decl            ::= varDecl /* DONE*/
+                | fnDecl /* DONE*/
+                | structDecl /* DONE*/      // struct definitions only at top level
                 ;
 
-varDeclList     ::= varDeclList varDecl
-                | /* epsilon */
+varDeclList     ::= varDeclList varDecl /* DONE*/
+                | /* epsilon */ /* DONE*/
                 ;
 
-varDecl         ::= type id SEMICOLON
+varDecl         ::= type id SEMICOLON  /* DONE*/
                 | STRUCT id id SEMICOLON
                 ;
 
-fnDecl          ::= type id formals fnBody
+fnDecl          ::= type id formals fnBody  /* DONE*/
                 ;
                 
-structDecl      ::= STRUCT id LCURLY structBody RCURLY SEMICOLON
+structDecl      ::= STRUCT id LCURLY structBody RCURLY SEMICOLON /* DONE*/
                 ;
                 
-structBody      ::= structBody varDecl
-                | varDecl
+structBody      ::= structBody varDecl /* DONE*/
+                | varDecl /* DONE*/
                 ;
                 
 formals         ::= LPAREN RPAREN /* DONE*/
                 | LPAREN formalsList RPAREN /* DONE*/
                 ;
 
-formalsList     ::= formalDecl
-                | formalDecl COMMA formalsList
+formalsList     ::= formalDecl /* DONE*/
+                | formalDecl COMMA formalsList /* DONE*/
                 ;
 
-formalDecl      ::= type id        // note: no struct parameters
+formalDecl      ::= type id  /* DONE*/       // note: no struct parameters
                 ;
 
 fnBody          ::= LCURLY varDeclList stmtList RCURLY  /* DONE*/
@@ -57,10 +57,10 @@ stmt            ::= assignExp SEMICOLON /* DONE*/
                 | IF LPAREN exp RPAREN LCURLY varDeclList stmtList RCURLY /* DONE*/
                 | IF LPAREN exp RPAREN LCURLY varDeclList stmtList RCURLY ELSE LCURLY varDeclList stmtList RCURLY /* DONE*/
                 | WHILE LPAREN exp RPAREN LCURLY varDeclList stmtList RCURLY /* DONE*/
-		        | REPEAT LPAREN exp RPAREN LCURLY varDeclList stmtList RCURLY
-                | RETURN exp SEMICOLON
-                | RETURN SEMICOLON
-                | fncall SEMICOLON
+		        | REPEAT LPAREN exp RPAREN LCURLY varDeclList stmtList RCURLY /* DONE*/
+                | RETURN exp SEMICOLON /* DONE*/
+                | RETURN SEMICOLON /* DONE*/
+                | fncall SEMICOLON /* DONE*/
                 ;
 
 assignExp       ::= loc ASSIGN exp /* DONE*/
@@ -84,21 +84,21 @@ exp             ::= assignExp /* DONE*/
                 | term /* DONE*/
                 ;
 
-term            ::= loc
+term            ::= loc /* DONE*/
                 | INTLITERAL /* DONE*/
                 | STRINGLITERAL /* DONE*/
                 | TRUE /* DONE*/
                 | FALSE /* DONE*/
                 | LPAREN exp RPAREN /* DONE*/
-                | fncall
+                | fncall /* DONE*/
                 ;
 
-fncall          ::=  id LPAREN RPAREN   // fn call with no args
-                | id LPAREN actualList RPAREN  // with args
+fncall          ::=  id LPAREN RPAREN   // fn call with no args  /* DONE*/
+                | id LPAREN actualList RPAREN  // with args  /* DONE*/
                 ;
 
-actualList      ::= exp
-                | actualList COMMA exp
+actualList      ::= exp /* DONE*/
+                | actualList COMMA exp /* DONE*/
                 ;
 
 type            ::= INT /* DONE*/
