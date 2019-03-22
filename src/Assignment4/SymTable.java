@@ -9,7 +9,7 @@ public class SymTable {
     }
     
     public void addDecl(String name, Sym sym) 
-	throws DuplicateSymException, EmptySymTableException, WrongArgumentException {
+	    throws DuplicateSymException, EmptySymTableException, WrongArgumentException {
 	if (name == null && sym == null) {
 	    throw new WrongArgumentException("Arguments name and sym are null.");
 	}

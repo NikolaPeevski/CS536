@@ -110,7 +110,6 @@ import java.util.*;
 abstract class ASTnode { 
     // every subclass must provide an unparse operation
     abstract public void unparse(PrintWriter p, int indent);
-
     // this method can be used by the unparse methods to do indenting
     protected void addIndent(PrintWriter p, int indent) {
         for (int k = 0; k < indent; k++) p.print(" ");
@@ -122,17 +121,69 @@ abstract class ASTnode {
 // StmtListNode, ExpListNode
 // **********************************************************************
 
+class ErrorWriter {
+    private boolean hasError = false;
+
+    public void duplicate(IdNode id) {
+        //TODO: Check positions
+        ErrMsg.fatal(id.lineNum, id.charNum, "Multiply declared identifier");
+        setError();
+    }
+    public void undeclared(IdNode id) {
+        //TODO: Check positions, should be both ID of parent and child ?
+        ErrMsg.fatal(id.lineNum, id.charNum, "Undeclared identifier");
+        setError();
+    }
+    public void nonStructAccess(IdNode id) {
+        //TODO: Check positions, should be both ID of parent and child ?
+        ErrMsg.fatal(id.lineNum, id.charNum, "Dot-access of non-struct type");
+        setError();
+    }
+    public void invalidStructField(IdNode id) {
+        //TODO: Check positions, should be both ID of parent and child ?
+        ErrMsg.fatal(id.lineNum, id.charNum, "Invalid struct field name");
+        setError();
+    }
+    public void nonFuncVoided(IdNode id) {
+        //TODO: Check positions, should be both ID of parent and child ?
+        ErrMsg.fatal(id.lineNum, id.charNum, "Non-function declared void");
+        setError();
+    }
+    public void invalidStructType(IdNode id) {
+        //TODO: Check positions, should be both ID of parent and child ?
+        ErrMsg.fatal(id.lineNum, id.charNum, "Invalid name of struct type");
+        setError();
+    }
+
+    private void setError() {
+        hasError = true;
+    }
+
+    public boolean checkError() {
+        return hasError;
+    }
+}
+
 class ProgramNode extends ASTnode {
     public ProgramNode(DeclListNode L) {
         myDeclList = L;
+        scopeTable = new SymTable();
+        errorWriter = new ErrorWriter();
     }
 
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
     }
 
+    public boolean analyze() {
+        myDeclList.analyze(errorWriter, scopeTable);
+
+        return errorWriter.checkError();
+    }
     // 1 kid
     private DeclListNode myDeclList;
+    private SymTable scopeTable;
+    private ErrorWriter errorWriter;
 }
 
 class DeclListNode extends ASTnode {
@@ -151,7 +202,18 @@ class DeclListNode extends ASTnode {
             System.exit(-1);
         }
     }
-
+    public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
+        Iterator it = myDecls.iterator();
+        try {
+            while (it.hasNext()) {
+                scopeTable = ((DeclNode)it.next()).analyze(p, scopeTable);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.exit(-1);
+        }
+        return scopeTable;
+    }
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
 }
@@ -233,6 +295,7 @@ class ExpListNode extends ASTnode {
 // **********************************************************************
 
 abstract class DeclNode extends ASTnode {
+    abstract public SymTable analyze(ErrorWriter p, SymTable scopeTable);
 }
 
 class VarDeclNode extends DeclNode {
@@ -248,6 +311,12 @@ class VarDeclNode extends DeclNode {
         p.print(" ");
         myId.unparse(p, 0);
         p.println(";");
+    }
+
+    public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
+        //TODO: Implement this
+        scopeTable
+        return scopeTable;
     }
 
     // 3 kids
@@ -267,6 +336,11 @@ class FnDeclNode extends DeclNode {
         myId = id;
         myFormalsList = formalList;
         myBody = body;
+    }
+
+    public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
+        //TODO: Implement this
+        return scopeTable;
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -300,6 +374,12 @@ class FormalDeclNode extends DeclNode {
         myId.unparse(p, 0);
     }
 
+    public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
+        //TODO: Implement this
+        return scopeTable;
+    }
+
+
     // 2 kids
     private TypeNode myType;
     private IdNode myId;
@@ -320,6 +400,11 @@ class StructDeclNode extends DeclNode {
         addIndent(p, indent);
         p.println("};\n");
 
+    }
+
+    public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
+        //TODO: Implement this
+        return scopeTable;
     }
 
     // 2 kids

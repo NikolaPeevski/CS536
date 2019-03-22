@@ -10,6 +10,7 @@ import java_cup.runtime.*;
  *       unparsed
  */
 
+
 public class P4 {
     public static void main(String[] args)
         throws IOException // may be thrown by the scanner
@@ -54,10 +55,9 @@ public class P4 {
             System.exit(-1);
         }
 
-	// ADD NAME ANALYSIS PART HERE
-        ((ASTnode)root.value).unparse(outFile, 0);
+        if (!((ProgramNode)root.value).analyze())
+            ((ASTnode)root.value).unparse(outFile, 0);
         outFile.close();
-
         return;
     }
 }
