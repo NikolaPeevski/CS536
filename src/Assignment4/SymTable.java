@@ -38,8 +38,8 @@ public class SymTable {
     public Sym lookupLocal(String name) {
         if (list.isEmpty())
             return null;
-        
-        HashMap<String, Sym> symTab = list.get(0); 
+
+        HashMap<String, Sym> symTab = list.get(0);
         return symTab.get(name);
     }
     

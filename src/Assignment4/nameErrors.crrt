@@ -1,24 +1,16 @@
-void main() {
-	int x;
-	x = 0;
-	f1();
-	g(x);
-	f2();
-}
+int ab;
 
-void f1() {
-	int x;
-	x = 10;
-	g(x);
-}
+struct Point {
+    int x;
+    int y;
+};
 
-void f2() {
-	int x;
-	x = 20;
-	f1();
-	g(x);
-}
+int a(int a, int b) {
+    int x;
+    struct Pointo p1;
 
-void g(int x) {
-	print(x);
+    if (x.y == -1) {
+     p1.x = 5;
+     p1.x = 4+3*5-y-(-y);
+     }
 }
