@@ -9,8 +9,6 @@ public class Sym {
     public Sym(String type) {
         this.type = type;
         this.params = new LinkedList<String>();
-
-        System.out.println(toString());
     }
     public Sym(String type, LinkedList<String> params) {
         this.type = type;
@@ -20,8 +18,6 @@ public class Sym {
     public Sym(String type, String parent) {
         this.type = type;
         this.parent = parent;
-
-        System.out.println(toString());
     }
     
     public String getType() {
@@ -53,9 +49,9 @@ public class Sym {
 
         while (iterator.hasNext()) {
             //Casting, necessary evil
-            out += String.format(", %s", (String)iterator.next());
+            out += String.format(",%s", (String)iterator.next());
         }
 
-        return String.format("%s -> %s", out, type);
+        return String.format("%s->%s", out, type);
     }
 }

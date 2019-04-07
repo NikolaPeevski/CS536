@@ -1,15 +1,27 @@
 int ab;
 
+int as() {
+    int a;
+    int a;
+
+}
+
+int as(int as, int aa) {
+    int aa;
+
+}
+
 struct Point {
     int x;
     int y;
+    int x;
 };
 
 int a(int a, int b) {
     int x;
     struct Pointo p1;
 
-    if (x.y == -1) {
+    if (p1.z == -1) {
      p1.x = 5;
      p1.x = 4+3*5-y-(-y);
      }

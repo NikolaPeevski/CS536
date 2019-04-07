@@ -2,6 +2,47 @@ import java.io.*;
 import java.util.*;
 
 // **********************************************************************
+// The ErrorWriter class defines the error checking for the name analysis of the abstract-syntax tree that
+// represents a Carrot program.
+// **********************************************************************
+class ErrorWriter {
+    private boolean hasError = false;
+
+    public void duplicate(IdNode id, TypeNode type) {
+        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Multiply declared identifier");
+        setError();
+    }
+    public void undeclared(IdNode id) {
+        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Undeclared identifier");
+        setError();
+    }
+    public void nonStructAccess(IdNode id) {
+        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Dot-access of non-struct type");
+        setError();
+    }
+    public void invalidStructField(IdNode id) {
+        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Invalid struct field name");
+        setError();
+    }
+    public void nonFuncVoided(IdNode id) {
+        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Non-function declared void");
+        setError();
+    }
+    public void invalidStructType(IdNode id) {
+        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Invalid name of struct type");
+        setError();
+    }
+
+    private void setError() {
+        hasError = true;
+    }
+
+    public boolean checkError() {
+        return hasError;
+    }
+}
+
+// **********************************************************************
 // The ASTnode class defines the nodes of the abstract-syntax tree that
 // represents a Carrot program.
 //
@@ -121,49 +162,6 @@ abstract class ASTnode {
 // StmtListNode, ExpListNode
 // **********************************************************************
 
-class ErrorWriter {
-    private boolean hasError = false;
-
-    public void duplicate(IdNode id, TypeNode type) {
-        //TODO: Check positions
-        ErrMsg.fatal(id.myLineNum, id.myCharNum + type.toString().length() + 1, "Multiply declared identifier");
-        setError();
-    }
-    public void undeclared(IdNode id) {
-        //TODO: Check positions, should be both ID of parent and child ?
-        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Undeclared identifier");
-        setError();
-    }
-    public void nonStructAccess(IdNode id) {
-        //TODO: Check positions, should be both ID of parent and child ?
-        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Dot-access of non-struct type");
-        setError();
-    }
-    public void invalidStructField(IdNode id) {
-        //TODO: Check positions, should be both ID of parent and child ?
-        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Invalid struct field name");
-        setError();
-    }
-    public void nonFuncVoided(IdNode id) {
-        //TODO: Check positions, should be both ID of parent and child ?
-        ErrMsg.fatal(id.myLineNum, id.myCharNum - 1, "Non-function declared void");
-        setError();
-    }
-    public void invalidStructType(IdNode id) {
-        //TODO: Check positions, should be both ID of parent and child ?
-        ErrMsg.fatal(id.myLineNum, id.myCharNum, "Invalid name of struct type");
-        setError();
-    }
-
-    private void setError() {
-        hasError = true;
-    }
-
-    public boolean checkError() {
-        return hasError;
-    }
-}
-
 class ProgramNode extends ASTnode {
     public ProgramNode(DeclListNode L) {
         myDeclList = L;
@@ -198,7 +196,7 @@ class DeclListNode extends ASTnode {
                 ((DeclNode)it.next()).unparse(p, indent);
             }
         } catch (NoSuchElementException ex) {
-            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.err.println("unexpected NoSuchElementException in DeclListNode.unparse");
             System.exit(-1);
         }
     }
@@ -214,7 +212,7 @@ class DeclListNode extends ASTnode {
                 scopeTable = curr.analyze(p, scopeTable);
             }
         } catch (NoSuchElementException ex) {
-            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.err.println("unexpected NoSuchElementException in DeclListNode.analyze");
             System.exit(-1);
         }
         return scopeTable;
@@ -256,7 +254,7 @@ class FormalsListNode extends ASTnode {
                 scopeTable = ((FormalDeclNode)it.next()).analyze(p, scopeTable);
             }
         } catch (NoSuchElementException ex) {
-            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.err.println("unexpected NoSuchElementException in FormalsListNode.analyze");
             System.exit(-1);
         }
         return scopeTable;
@@ -308,7 +306,7 @@ class StmtListNode extends ASTnode {
                 scopeTable = ((StmtNode)it.next()).analyze(p, scopeTable);
             }
         } catch (NoSuchElementException ex) {
-            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.err.println("unexpected NoSuchElementException in StmtListNode.analyze");
             System.exit(-1);
         }
         return scopeTable;
@@ -341,7 +339,7 @@ class ExpListNode extends ASTnode {
                 scopeTable = ((ExpNode)it.next()).analyze(p, scopeTable);
             }
         } catch (NoSuchElementException ex) {
-            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.err.println("unexpected NoSuchElementException in ExpListNode.analyze");
             System.exit(-1);
         }
         return scopeTable;
@@ -379,7 +377,6 @@ class VarDeclNode extends DeclNode {
     public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
         if (myType.getClass().equals(VoidNode.class)) {
             p.nonFuncVoided(myId);
-            //TODO: Double check the errors in the report
         }
         if (mySize == 0 && scopeTable.lookupGlobal(myType.toString()) == null) {
             p.invalidStructType(myId);
@@ -390,8 +387,6 @@ class VarDeclNode extends DeclNode {
                 scopeTable.addDecl(String.format("%s %s",parent, myId.myStrVal), new Sym(myType.toString(), parent));
             else
                 scopeTable.addDecl(myId.myStrVal, new Sym(myType.toString()));
-            scopeTable.print();
-
         } catch (DuplicateSymException e) {
             p.duplicate(myId, myType);
         } finally {
@@ -421,6 +416,9 @@ class FnDeclNode extends DeclNode {
     public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
         try {
             scopeTable.addDecl(myId.myStrVal, new Sym(myType.toString(), myFormalsList.listify()));
+        } catch (DuplicateSymException e) {
+            p.duplicate(myId, myType);
+        } finally {
             //Enter function
             scopeTable.addScope();
             //Parse formals as variables
@@ -434,10 +432,6 @@ class FnDeclNode extends DeclNode {
                 System.out.println("Something went terribly wrong in a FUNCTION DECLARATION statement.");
                 System.exit(0);
             }
-            //Process
-        } catch (DuplicateSymException e) {
-            p.duplicate(myId, myType);
-        } finally {
             return scopeTable;
         }
     }
@@ -478,7 +472,6 @@ class FormalDeclNode extends DeclNode {
         try {
             scopeTable.addDecl(myId.myStrVal, new Sym(myType.toString()));
         } catch (DuplicateSymException e) {
-            scopeTable.print();
             p.duplicate(myId, myType);
         } finally {
             return scopeTable;
@@ -522,7 +515,6 @@ class StructDeclNode extends DeclNode {
             return scopeTable;
 
         }
-        //TODO: Implement this
     }
 
     // 2 kids
@@ -628,7 +620,7 @@ class AssignStmtNode extends StmtNode {
     }
 
     public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
-        scopeTable.print();
+//        scopeTable.print();print
         return myAssign.analyze(p, scopeTable);
     }
 
@@ -1063,7 +1055,7 @@ class IdNode extends ExpNode {
     public SymTable analyze(ErrorWriter p, SymTable scopeTable) {
         //TODO: MAke sure this is never called although ...
 //        System.out.println("Id node analysis is not implemented." + " " + myStrVal);
-        System.out.println(myStrVal);
+//        System.out.println(myStrVal);
 
         if (link == null) {
             Sym s = scopeTable.lookupGlobal(myStrVal);
@@ -1161,7 +1153,7 @@ class CallExpNode extends ExpNode {
     // ** unparse **
     public void unparse(PrintWriter p, int indent) {
         myId.unparse(p, 0);
-        System.out.println(myId.myStrVal);
+//        System.out.println(myId.myStrVal);
 //        p.print(String.format("(%s)", myId.link.complexToString()));
         p.print("(");
         if (myExpList != null) {
