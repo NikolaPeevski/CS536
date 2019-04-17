@@ -140,7 +140,7 @@ class ProgramNode extends ASTnode {
      * typeCheck
      */
     public void typeCheck() {
-	// TODO: Implement a type checking method for this node and its children.
+	    myDeclList.typeCheck();
     }
     
     public void unparse(PrintWriter p, int indent) {
@@ -185,6 +185,17 @@ class DeclListNode extends ASTnode {
         try {
             while (it.hasNext()) {
                 ((DeclNode)it.next()).unparse(p, indent);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.exit(-1);
+        }
+    }
+    public void typeCheck() {
+        Iterator it = myDecls.iterator();
+        try {
+            while (it.hasNext()) {
+                ((DeclNode)it.next()).typeCheck();
             }
         } catch (NoSuchElementException ex) {
             System.err.println("unexpected NoSuchElementException in DeclListNode.print");
@@ -263,6 +274,11 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
+    public void typeCheck() {
+        myDeclList.typeCheck();
+        myStmtList.typeCheck();
+    }
+
     // 2 kids  
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -287,6 +303,12 @@ class StmtListNode extends ASTnode {
         Iterator<StmtNode> it = myStmts.iterator();
         while (it.hasNext()) {
             it.next().unparse(p, indent);
+        }
+    }
+
+    public void typeCheck() {
+        for (StmtNode node : myStmts) {
+            node.typeCheck();
         }
     }
 
@@ -320,6 +342,10 @@ class ExpListNode extends ASTnode {
         } 
     }
 
+    public ExpNode getLast() {
+        return ((LinkedList<ExpNode>)myExps).getLast();
+    }
+
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
 }
@@ -333,6 +359,7 @@ abstract class DeclNode extends ASTnode {
      * Note: a formal decl needs to return a sym
      */
     abstract public Sym nameAnalysis(SymTable symTab);
+    abstract public void typeCheck();
 }
 
 class VarDeclNode extends DeclNode {
@@ -340,6 +367,10 @@ class VarDeclNode extends DeclNode {
         myType = type;
         myId = id;
         mySize = size;
+    }
+
+    public void typeCheck() {
+
     }
 
     /**
@@ -414,10 +445,10 @@ class VarDeclNode extends DeclNode {
                                    " in VarDeclNode.nameAnalysis");
                 System.exit(-1);
             } catch (WrongArgumentException ex) {
-		System.err.println("Unexpected WrongArgumentException " +
-                                   " in VarDeclNode.nameAnalysis");
-		System.exit(-1);
-	    }
+                System.err.println("Unexpected WrongArgumentException " +
+                                           " in VarDeclNode.nameAnalysis");
+                System.exit(-1);
+            }
         }
         
         return sym;
@@ -448,6 +479,10 @@ class FnDeclNode extends DeclNode {
         myId = id;
         myFormalsList = formalList;
         myBody = body;
+    }
+
+    public void typeCheck() {
+        myBody.typeCheck();
     }
 
     /**
@@ -538,6 +573,10 @@ class FormalDeclNode extends DeclNode {
         myId = id;
     }
 
+    public void typeCheck() {
+
+    }
+
     /**
      * nameAnalysis
      * Given a symbol table symTab, do:
@@ -601,6 +640,10 @@ class StructDeclNode extends DeclNode {
     public StructDeclNode(IdNode id, DeclListNode declList) {
         myId = id;
         myDeclList = declList;
+    }
+
+    public void typeCheck() {
+        myDeclList.typeCheck();
     }
 
     /**
@@ -755,6 +798,8 @@ class StructNode extends TypeNode {
 
 abstract class StmtNode extends ASTnode {
     abstract public void nameAnalysis(SymTable symTab);
+    abstract public void typeCheck();
+
 }
 
 class AssignStmtNode extends StmtNode {
@@ -775,6 +820,9 @@ class AssignStmtNode extends StmtNode {
         myAssign.unparse(p, -1); // no parentheses
         p.println(";");
     }
+
+    //TODO: Implement this
+    public void typeCheck() {}
 
     // 1 kid
     private AssignNode myAssign;
@@ -799,6 +847,9 @@ class PostIncStmtNode extends StmtNode {
         p.println("++;");
     }
 
+    //TODO: Implement this
+    public void typeCheck() {}
+
     // 1 kid
     private ExpNode myExp;
 }
@@ -822,6 +873,8 @@ class PostDecStmtNode extends StmtNode {
         p.println("--;");
     }
 
+    //TODO: Implement this
+    public void typeCheck() {}
     // 1 kid
     private ExpNode myExp;
 }
@@ -846,6 +899,13 @@ class ReadStmtNode extends StmtNode {
         p.println(";");
     }
 
+    //TODO: Implement this
+    //Reading a function: e.g., "cin >> f", where f is a function name.
+    //Reading a struct name; e.g., "cin >> P", where P is the name of a struct type.
+    //Reading a struct variable; e.g., "cin >> p", where p is a variable declared to be of a struct type.
+
+    public void typeCheck() {}
+
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
     private ExpNode myExp;
 }
@@ -868,6 +928,39 @@ class WriteStmtNode extends StmtNode {
         p.print("cout << ");
         myExp.unparse(p, 0);
         p.println(";");
+    }
+
+    //TODO: Implement this
+    // OK Writing a function; e.g., "cout << f", where f is a function name.
+    //OK Writing a struct name; e.g., "cout << P", where P is the name of a struct type.
+    //OK Writing a struct variable; e.g., "cout << p", where p is a variable declared to be of a struct type.
+    //OK Writing a void value (note: this can only happen if there is an attempt to write the return value from a void function); e.g., "cout << f()", where f is a void function
+    public void typeCheck() {
+        if (myExp instanceof IdNode) {
+            IdNode id = ((IdNode) myExp);
+            Type t = id.sym().getType();
+            if (id.sym() instanceof StructSym) {
+                ErrMsg.fatal(id.lineNum(), id.charNum(), "Attempt to write a struct variable");
+            }
+            if (t.isFnType()) {
+                ErrMsg.fatal(id.lineNum(), id.charNum(), "Attempt to write a function");
+            }
+            if (t.isStructDefType()) {
+                ErrMsg.fatal(id.lineNum(), id.charNum(), "Attempt to write a struct name");
+            }
+            if (t.isVoidType()) {
+                ErrMsg.fatal(id.lineNum(), id.charNum(), "Attempt to write void");
+            }
+
+        }
+        if (myExp instanceof CallExpNode) {
+            IdNode id = ((CallExpNode) myExp).getMyId();
+            FnSym s = (FnSym)((CallExpNode) myExp).getMyId().sym();
+            if (s.getReturnType().isVoidType()) {
+                ErrMsg.fatal(id.lineNum(), id.charNum(), "Attempt to write void");
+            }
+        }
+
     }
 
     // 1 kid
@@ -913,6 +1006,10 @@ class IfStmtNode extends StmtNode {
         addIndent(p, indent);
         p.println("}");
     }
+
+    //TODO: Implement this
+    public void typeCheck() {}
+
 
     // e kids
     private ExpNode myExp;
@@ -983,6 +1080,9 @@ class IfElseStmtNode extends StmtNode {
         p.println("}");        
     }
 
+    //TODO: Implement this
+    public void typeCheck() {}
+
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
@@ -1031,6 +1131,9 @@ class WhileStmtNode extends StmtNode {
         p.println("}");
     }
 
+    //TODO: Implement this
+    public void typeCheck() {}
+
     // 3 kids   
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -1077,6 +1180,9 @@ class RepeatStmtNode extends StmtNode {
         p.println("}");
     }
 
+    //TODO: Implement this
+    public void typeCheck() {}
+
     // 3 kids   
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -1102,6 +1208,9 @@ class CallStmtNode extends StmtNode {
         myCall.unparse(p, indent);
         p.println(";");
     }
+
+    //TODO: Implement this
+    public void typeCheck() {}
 
     // 1 kid
     private CallExpNode myCall;
@@ -1133,6 +1242,12 @@ class ReturnStmtNode extends StmtNode {
         p.println(";");
     }
 
+    //TODO: Implement this
+    //Returning from a non-void function with a plain return statement (i.e., one that does not return a value).
+    //Returning a value from a void function.
+    //Returning a value of the wrong type from a non-void function.
+    public void typeCheck() {}
+
     // 1 kid
     private ExpNode myExp; // possibly null
 }
@@ -1146,6 +1261,7 @@ abstract class ExpNode extends ASTnode {
      * Default version for nodes with no names
      */
     public void nameAnalysis(SymTable symTab) { }
+    public void typeCheck() { }
 }
 
 class IntLitNode extends ExpNode {
@@ -1408,6 +1524,8 @@ class DotAccessExpNode extends ExpNode {
         p.print(".");
         myId.unparse(p, 0);
     }
+    //TODO: Implement this
+    public void typeCheck() {}
 
     // 2 kids  
     private ExpNode myLoc;    
@@ -1439,6 +1557,9 @@ class AssignNode extends ExpNode {
         myExp.unparse(p, 0);
         if (indent != -1)  p.print(")");
     }
+
+    //TODO: Implement this
+    public void typeCheck() {}
 
     // 2 kids  
     private ExpNode myLhs;
@@ -1476,6 +1597,21 @@ class CallExpNode extends ExpNode {
         p.print(")");
     }
 
+    public IdNode getMyId() {
+        return myId;
+    }
+
+    public ExpNode getReturn() {
+        return myExpList.getLast();
+    }
+
+
+    //TODO: Implement this
+    //Calling something other than a function; e.g., "x();", where x is not a function name. Note: In this case, you should not type-check the actual parameters.
+    //Calling a function with the wrong number of arguments. Note: In this case, you should not type-check the actual parameters.
+    //Calling a function with an argument of the wrong type. Note: you should only check for this error if the number of arguments is correct. If there are several arguments with the wrong type, you must give an error message for each such argument.
+    public void typeCheck() {}
+
     // 2 kids  
     private IdNode myId;
     private ExpListNode myExpList;  // possibly null
@@ -1493,6 +1629,9 @@ abstract class UnaryExpNode extends ExpNode {
     public void nameAnalysis(SymTable symTab) {
         myExp.nameAnalysis(symTab);
     }
+
+    //TODO: Implement this
+    public void typeCheck() {}
     
     // one child
     protected ExpNode myExp;
@@ -1513,6 +1652,8 @@ abstract class BinaryExpNode extends ExpNode {
         myExp1.nameAnalysis(symTab);
         myExp2.nameAnalysis(symTab);
     }
+    //TODO: Implement this
+    public void typeCheck() {}
     
     // two kids
     protected ExpNode myExp1;
