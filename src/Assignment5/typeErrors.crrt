@@ -1,12 +1,67 @@
 bool bbb;
 struct S { int a; };
+struct P { int b; };
 struct S t;
+struct S b;
 
-void f(int p1, bool p2) {
+int f(int p1, bool p2) {
+}
+
+int q(int p1, bool p2) {
+    return true;
+}
+int p() {
+    return true;
+}
+void d(int p1, bool p2) {
+    return true;
 }
 
 void main() {
     int aaa;
+    bool x;
+    x = false;
+    cout << f;
+    cout << S;
+    cout << t;
+    cout << d(1,1);
+
+    cin >> f;
+    cin >> S;
+    cin >> t;
+
+    aaa();
+
+    f(5);
+    f(true,5);
+
+    if (5 + 5) {
+        aaa = 10;
+    }
+
+    while (5+5) {
+        aaa++;
+    }
+
+    repeat (true) {
+        aaa--;
+    }
+
+    //Cascading testing
+
+    cout << P + 1;          // P + 1 is an error; the write is OK
+
+    aaa = (true + 3) * 4;         // true + 3 is an error; the * is OK
+
+    aaa = true && (false || 3);   // false || 3 is an error; the && is OK
+
+    f("a" * 4, true);            // "a" * 4 is an error; the call is OK
+
+    aaa = 1 + p();               // p() is an error; the + is OK
+
+    aaa = ((true + 3) == x);       // true + 3 is an error; the == is OK
+
+                           // regardless of the type of x
 
     // some errors involving illegal operations on functions
     aaa = f + f;

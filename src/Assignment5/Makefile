@@ -56,11 +56,10 @@ DuplicateSymException.class: DuplicateSymException.java
 EmptySymTableException.class: EmptySymTableException.java
 	$(JC) -g -cp $(CP) EmptySymTableException.java
 
-###
-# test
-#
+###test
 test:
 	java -cp $(CP) P5 test.crrt test.out
+	java -cp $(CP) P5 typeErrors.crrt typeErrors.out
 
 ###
 # clean

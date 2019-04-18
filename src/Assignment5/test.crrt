@@ -1,44 +1,42 @@
 bool bbb;
 struct S { int a; };
+struct P { int b; };
 struct S t;
+struct S b;
 
-void f(int p1, bool p2) {
+int f(int p1, bool p2) {
+    if (p2 == true) {
+        return p1;
+    }
+    return 0;
+}
+
+int p() {
+    return 0;
+}
+
+void d(int p1, bool p2) {
 }
 
 void main() {
-     int aaa;
+    int aaa;
+    bool x;
+    x = false;
+    cout << "Test";
 
-    // some errors involving illegal operations on functions
-    aaa = f + f;
-    bbb = f == 3;
-    bbb = f > main;
-    bbb = f == f;
+    cin >> aaa;
 
-    // some errors involving bad function calls
-    aaa();
-    f();
-    f(5);
-    f(aaa, aaa);
-    f(t, t.a);
-    S();
+    d(aaa, x);
 
-    // some errors involving structs
-    t = 5;
-    t = t;
-    cin >> S;
+    if (x == true) {
+        aaa = 10;
+    }
 
-    cout << f(1,1);
-    t = true || 3;
-    bbb = S && t.a;
+    while (x == true) {
+        aaa++;
+    }
 
-    // error involving return
-    return 10;
-
-    // other type errors
-    aaa = aaa + (!false);
-    aaa = aaa + "foo";
-    bbb = aaa;
-
-    // don't give too many or too few error messages here
-    bbb = (aaa + true) && (bbb < true);
+    repeat (aaa) {
+        aaa--;
+    }
 }

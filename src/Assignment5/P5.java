@@ -20,6 +20,7 @@ public class P5 {
 	public static final int RESULT_CORRECT = 0;
 	public static final int RESULT_SYNTAX_ERROR = 1;
 	public static final int RESULT_TYPE_ERROR = 2;
+	public static final int RESULT_NAME_ANALYSIS_ERROR = 3;
 	public static final int RESULT_OTHER_ERROR = -1;
 
 	/**
@@ -143,8 +144,14 @@ public class P5 {
 		}
 		
 		astRoot.nameAnalysis();  // perform name analysis
-		
+		if (ErrMsg.getErr()) {
+			return P5.RESULT_NAME_ANALYSIS_ERROR;
+		}
+
 		astRoot.typeCheck();
+		if (ErrMsg.getErr()) {
+			return P5.RESULT_TYPE_ERROR;
+		}
 		
 		astRoot.unparse(outFile, 0);
 		return P5.RESULT_CORRECT;
