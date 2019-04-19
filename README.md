@@ -1,5 +1,4 @@
-# Assignment 2
+# A collection of Assignments from CS536
 
-http://pages.cs.wisc.edu/~loris/cs536/asn/p2/p2.html
+http://pages.cs.wisc.edu/~loris/cs536/
 
-TODO: Do stuff ...
