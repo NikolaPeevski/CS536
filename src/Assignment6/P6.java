@@ -3,14 +3,16 @@ import java.io.*;
 import java_cup.runtime.*;
 
 /**
- * Main program to test the parser.
+ * %This is the main program to test the Carrot parser.%
  *
  * There should be 2 command-line arguments:
  *    1. the file to be parsed
- *    2. the output file into which the AST built by the parser should be
- *       unparsed
+ *    2. the output MIPS file
+ *
  * The program opens the two files, creates a scanner and a parser, and
- * calls the parser.  If the parse is successful, the AST is unparsed.
+ * calls the parser.  If the parse is successful, then it will call name
+ * analysis and type checking routines. If there is no error at the end,
+ * it will generate MIPS code to the output file.
  */
 public class P6 {
 	FileReader inFile;
@@ -154,7 +156,7 @@ public class P6 {
 		}
 
 		//////////////////////////
-		// TODO: Call codeGen   //
+		// TODO: Calling codeGen   //
 		//////////////////////////
 
 		return P6.RESULT_CORRECT;

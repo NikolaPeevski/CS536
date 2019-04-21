@@ -3,7 +3,7 @@ import java.util.*;
 
 // **********************************************************************
 // The ASTnode class defines the nodes of the abstract-syntax tree that
-// represents a C-- program.
+// represents a Carrot program.
 //
 // Internal nodes of the tree contain pointers to children, organized
 // either in a list (for nodes that may have a variable number of 
@@ -103,7 +103,7 @@ import java.util.*;
 // **********************************************************************
 
 // **********************************************************************
-// ASTnode class (base class for all other kinds of nodes)
+// %%%ASTnode class (base class for all other kinds of nodes)
 // **********************************************************************
 
 abstract class ASTnode { 
@@ -111,7 +111,7 @@ abstract class ASTnode {
     abstract public void unparse(PrintWriter p, int indent);
 
     // this method can be used by the unparse methods to do indenting
-    protected void doIndent(PrintWriter p, int indent) {
+    protected void addIndent(PrintWriter p, int indent) {
         for (int k=0; k<indent; k++) p.print(" ");
     }
 }
@@ -480,7 +480,7 @@ class VarDeclNode extends DeclNode {
     }    
     
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         myType.unparse(p, 0);
         p.print(" ");
         p.print(myId.name());
@@ -577,7 +577,7 @@ class FnDeclNode extends DeclNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         myType.unparse(p, 0);
         p.print(" ");
         p.print(myId.name());
@@ -715,12 +715,12 @@ class StructDeclNode extends DeclNode {
     }    
     
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("struct ");
         p.print(myId.name());
         p.println("{");
         myDeclList.unparse(p, indent+4);
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("};\n");
 
     }
@@ -842,7 +842,7 @@ class AssignStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         myAssign.unparse(p, -1); // no parentheses
         p.println(";");
     }
@@ -877,7 +877,7 @@ class PostIncStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         myExp.unparse(p, 0);
         p.println("++;");
     }
@@ -912,7 +912,7 @@ class PostDecStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         myExp.unparse(p, 0);
         p.println("--;");
     }
@@ -957,7 +957,7 @@ class ReadStmtNode extends StmtNode {
     }
     
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("cin >> ");
         myExp.unparse(p, 0);
         p.println(";");
@@ -1008,7 +1008,7 @@ class WriteStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("cout << ");
         myExp.unparse(p, 0);
         p.println(";");
@@ -1062,13 +1062,13 @@ class IfStmtNode extends StmtNode {
     }
        
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("if (");
         myExp.unparse(p, 0);
         p.println(") {");
         myDeclList.unparse(p, indent+4);
         myStmtList.unparse(p, indent+4);
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("}");
     }
 
@@ -1140,19 +1140,19 @@ class IfElseStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("if (");
         myExp.unparse(p, 0);
         p.println(") {");
         myThenDeclList.unparse(p, indent+4);
         myThenStmtList.unparse(p, indent+4);
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("}");
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("else {");
         myElseDeclList.unparse(p, indent+4);
         myElseStmtList.unparse(p, indent+4);
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("}");        
     }
 
@@ -1208,13 +1208,13 @@ class WhileStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("while (");
         myExp.unparse(p, 0);
         p.println(") {");
         myDeclList.unparse(p, indent+4);
         myStmtList.unparse(p, indent+4);
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("}");
     }
 
@@ -1268,13 +1268,13 @@ class RepeatStmtNode extends StmtNode {
     }
         
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("repeat (");
         myExp.unparse(p, 0);
         p.println(") {");
         myDeclList.unparse(p, indent+4);
         myStmtList.unparse(p, indent+4);
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.println("}");
     }
 
@@ -1306,7 +1306,7 @@ class CallStmtNode extends StmtNode {
     }
     
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         myCall.unparse(p, indent);
         p.println(";");
     }
@@ -1358,7 +1358,7 @@ class ReturnStmtNode extends StmtNode {
     }
     
     public void unparse(PrintWriter p, int indent) {
-        doIndent(p, indent);
+        addIndent(p, indent);
         p.print("return");
         if (myExp != null) {
             p.print(" ");

@@ -14,23 +14,23 @@ P6.class: P6.java parser.class Yylex.class ASTnode.class
 parser.class: parser.java ASTnode.class Yylex.class ErrMsg.class
 	$(JC) -g -cp $(CP) parser.java
 
-parser.java: cminusminus.cup
-	java -cp $(CP) java_cup.Main < cminusminus.cup
+parser.java: Carrot.cup
+	java -cp $(CP) java_cup.Main < Carrot.cup
 
-Yylex.class: cminusminus.jlex.java sym.class ErrMsg.class
-	$(JC) -g -cp $(CP) cminusminus.jlex.java
+Yylex.class: Carrot.jlex.java sym.class ErrMsg.class
+	$(JC) -g -cp $(CP) Carrot.jlex.java
 
 ASTnode.class: ast.java Type.java Sym.class
 	$(JC) -g -cp $(CP) ast.java Type.java
 
-cminusminus.jlex.java: cminusminus.jlex sym.class
-	java -cp $(CP) JLex.Main cminusminus.jlex
+Carrot.jlex.java: Carrot.jlex sym.class
+	java -cp $(CP) JLex.Main Carrot.jlex
 
 sym.class: sym.java
 	$(JC) -g -cp $(CP) sym.java
 
-sym.java: cminusminus.cup
-	java java_cup.Main < cminusminus.cup
+sym.java: Carrot.cup
+	java java_cup.Main < Carrot.cup
 
 ErrMsg.class: ErrMsg.java
 	$(JC) -g -cp $(CP) ErrMsg.java
@@ -57,13 +57,13 @@ EmptySymTableException.class: EmptySymTableException.java
 # test
 #
 test:
-	java -cp $(CP) P6 test.cmm test.s
+	java -cp $(CP) P6 test.crrt test.s
 
 ###
 # clean
 ###
 clean:
-	rm -f *~ *.class parser.java cminusminus.jlex.java sym.java
+	rm -f *~ *.class parser.java Carrot.jlex.java sym.java
 
 cleantest:
 	rm -f test.s

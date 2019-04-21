@@ -1,5 +1,5 @@
 /**********************************************************************
- Java CUP specification for a parser for C-- programs
+ Java CUP specification for a parser for Carrot programs
  **********************************************************************/
 
 import java_cup.runtime.*;
