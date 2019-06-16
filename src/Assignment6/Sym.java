@@ -18,6 +18,12 @@ public class Sym {
     public String toString() {
         return type.toString();
     }
+
+    public int offset = 0;
+
+    public int getOffset() { return offset; }
+
+    public void setOffset(int o) { offset = o; }
 }
 
 /**
@@ -37,7 +43,22 @@ class FnSym extends Sym {
         numParams = numparams;
     }
 
+    public int getBytes() {
+        int bytes = 0;
+
+        for (Type t :
+                paramTypes) {
+            if (t instanceof IntType)
+                bytes += 4;
+            if (t instanceof BoolType)
+                bytes += 1;
+        }
+
+        return bytes;
+    }
+
     public void addFormals(List<Type> L) {
+
         paramTypes = L;
     }
     

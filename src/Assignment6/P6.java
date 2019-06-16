@@ -156,8 +156,13 @@ public class P6 {
 		}
 
 		//////////////////////////
-		// TODO: Calling codeGen   //
+		// Calling codeGen   //
 		//////////////////////////
+		astRoot.codegen.p = outFile;
+
+		astRoot.codeGen();
+
+		outFile.close();
 
 		return P6.RESULT_CORRECT;
 	}

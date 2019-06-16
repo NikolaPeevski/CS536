@@ -1,0 +1,15 @@
+int x;
+int y;
+
+int f (int a, bool b) {
+    int c;
+    return 5;
+}
+
+int z;
+int main() {
+    int xy;
+    cout << 2 + 2;
+    f(1,true);
+    return 1;
+}
